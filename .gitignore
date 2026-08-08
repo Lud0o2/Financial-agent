@@ -1,0 +1,7 @@
+.env
+.venv/
+.tools/
+data/*.db
+data/briefs/
+data/charts/
+__pycache__/
