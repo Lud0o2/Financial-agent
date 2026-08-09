@@ -50,9 +50,9 @@ Portfolio records, account balances, transactions, generated briefs, and credent
 
 ## Sunday deep macro report
 
-`weekly_report.py` creates a long-form English report from the latest five trading sessions, dated FRED observations, and seven days of publisher-attributed headline claims. Its structure follows the research discipline of the workspace's `AI-Advisor-Build-Guide.pdf`: baseline, ranked changes, exact dashboard, transmission mechanisms, disagreements, catalysts, scenarios, and a known/unknown/invalidation close. It never copies the source report or treats headlines as verified facts.
+`weekly_report.py` creates a 5-10 minute English report (target 1,200-1,800 words; hard maximum 2,000) from the latest five trading sessions, dated FRED observations, and seven days of publisher-attributed headline claims. Its structure follows the research discipline of the workspace's `AI-Advisor-Build-Guide.pdf`: baseline, ranked changes, exact dashboard, transmission mechanisms, disagreements, catalysts, scenarios, and a known/unknown/invalidation close. It never copies the source report or treats headlines as verified facts.
 
-The report is saved under `data/weekly-reports/` and delivered to Telegram as a Markdown document. It requires `OPENAI_API_KEY`; optionally set `OPENAI_WEEKLY_MODEL`, otherwise it uses `OPENAI_MODEL` and then `gpt-5.6`.
+The report is saved under `data/weekly-reports/`, copied to the sibling Trading Coach Agent workspace as `Weekly_Macro_Report.md`, and delivered to Telegram as a Markdown document. The dated Investor OS portfolio record is copied alongside it as `Investor_OS_Portfolio_Snapshot.md` so Aura can reconcile recorded holdings against the macro backdrop. Set `TRADING_COACH_WORKSPACE` only when that workspace is stored somewhere else. The report requires `OPENAI_API_KEY`; optionally set `OPENAI_WEEKLY_MODEL`, otherwise it uses `OPENAI_MODEL` and then `gpt-5.6`.
 
 1. Test without Telegram delivery: `./.venv/Scripts/python.exe weekly_report.py --no-send`.
 2. Install the Sunday 19:00 schedule: `./Install-WeeklyReport.ps1`.

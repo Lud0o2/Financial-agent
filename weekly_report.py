@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import json
 import os
 from pathlib import Path
+import shutil
 
 from dotenv import load_dotenv
 
@@ -18,6 +19,8 @@ from telegram_alert import configured as telegram_configured, send_document
 
 
 REPORTS_DIR = Path(__file__).resolve().parent / "data" / "weekly-reports"
+DEFAULT_TRADING_COACH_DIR = Path(__file__).resolve().parents[2] / "trading coach agent"
+INVESTOR_PORTFOLIO_SOURCE = Path(__file__).resolve().parents[1] / "investor-os" / "financials" / "portfolio.md"
 
 WEEKLY_SYSTEM_PROMPT = """You are the evidence-led weekly macro analyst for Investor OS.
 Write a deep, standalone weekly report in English using ONLY the supplied evidence. The editorial
@@ -42,12 +45,35 @@ Use this exact architecture:
 ## 10. Known, unknown, inferred, and what would change the view
 ## Source notes and limitations
 
-Requirements: aim for 3,000-5,000 words when the evidence supports it; use compact Markdown tables
-for exact figures; date every observation; include a one-sentence takeaway after major sections; make
-every scenario include confirmation and invalidation conditions; do not personalize a trade or give
-investment instructions; close with an educational, non-advisory disclaimer. If the supplied evidence
-does not establish an item such as an economic-calendar event or market-implied probability, say so
-and give the exact evidence needed rather than filling the gap."""
+Requirements: this must take 5-10 minutes to read. Target 1,200-1,800 words and NEVER exceed 2,000
+words. Prioritize only decision-relevant changes; compress source narration, combine overlapping
+signals, and omit low-impact headlines. Use compact Markdown tables for exact figures; date every
+observation; include a one-sentence takeaway after major sections; make every scenario include
+confirmation and invalidation conditions; do not personalize a trade or give investment instructions;
+close with an educational, non-advisory disclaimer. If the supplied evidence does not establish an
+item such as an economic-calendar event or market-implied probability, say so briefly and identify the
+missing evidence rather than filling the gap."""
+
+
+def _trading_coach_destination() -> Path | None:
+    configured = os.getenv("TRADING_COACH_WORKSPACE")
+    workspace = Path(configured).expanduser() if configured else DEFAULT_TRADING_COACH_DIR
+    if not workspace.is_dir():
+        return None
+    return workspace / "Weekly_Macro_Report.md"
+
+
+def _copy_to_trading_coach(report_path: Path) -> list[Path]:
+    destination = _trading_coach_destination()
+    if destination is None:
+        return []
+    shutil.copy2(report_path, destination)
+    copied = [destination]
+    if INVESTOR_PORTFOLIO_SOURCE.is_file():
+        portfolio_destination = destination.parent / "Investor_OS_Portfolio_Snapshot.md"
+        shutil.copy2(INVESTOR_PORTFOLIO_SOURCE, portfolio_destination)
+        copied.append(portfolio_destination)
+    return copied
 
 
 def _macro_week() -> dict[str, dict[str, object]]:
@@ -98,18 +124,43 @@ def generate_report() -> tuple[str, list[str]]:
     from openai import OpenAI
 
     configure_tls()
-    response = OpenAI().responses.create(
-        model=os.getenv("OPENAI_WEEKLY_MODEL", os.getenv("OPENAI_MODEL", "gpt-5.6")),
+    client = OpenAI()
+    model = os.getenv("OPENAI_WEEKLY_MODEL", os.getenv("OPENAI_MODEL", "gpt-5.6"))
+    response = client.responses.create(
+        model=model,
         input=[
             {"role": "system", "content": WEEKLY_SYSTEM_PROMPT},
             {"role": "user", "content": "Create this Sunday's report from the evidence JSON:\n" + evidence},
         ],
-        max_output_tokens=16000,
+        max_output_tokens=6000,
         text={"verbosity": "high"},
     )
     report = response.output_text.strip()
     if not report:
         raise RuntimeError("OpenAI returned an empty weekly report.")
+    word_count = len(report.split())
+    if word_count > 2000:
+        compression = client.responses.create(
+            model=model,
+            input=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Edit the supplied weekly macro report to 1,200-1,800 words and never more "
+                        "than 2,000 words. Preserve its factual qualifications, key figures, scenario "
+                        "confirmations and invalidations, source limitations, headings, and disclaimer. "
+                        "Remove repetition and low-impact detail. Do not add facts. Return only the report."
+                    ),
+                },
+                {"role": "user", "content": report},
+            ],
+            max_output_tokens=6000,
+            text={"verbosity": "medium"},
+        )
+        report = compression.output_text.strip()
+        word_count = len(report.split())
+        if not report or word_count > 2000:
+            raise RuntimeError(f"Weekly report could not meet the 2,000-word reading limit ({word_count} words).")
     return report, warnings
 
 
@@ -122,8 +173,14 @@ def main() -> int:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     output = REPORTS_DIR / f"{datetime.now():%Y-%m-%d}-weekly-macro-report.md"
     output.write_text(report + "\n", encoding="utf-8")
+    trading_coach_copies = _copy_to_trading_coach(output)
     for warning in warnings:
         print(f"WARNING: {warning}")
+    if not trading_coach_copies:
+        print("WARNING: Trading Coach Agent workspace was not found; report handoff skipped.")
+    else:
+        for copied_path in trading_coach_copies:
+            print(f"TRADING COACH COPY: {copied_path}")
     if args.no_send or not telegram_configured():
         print(f"WEEKLY REPORT SAVED: {output}. Telegram delivery skipped.")
         return 0
