@@ -15,7 +15,7 @@ from macro import weekly_market_snapshot
 from macro_data import FRED_SERIES, fred_history
 from network import configure_tls
 from news import market_news
-from telegram_alert import configured as telegram_configured, send_document
+from telegram_alert import configured as telegram_configured, send
 
 
 REPORTS_DIR = Path(__file__).resolve().parent / "data" / "weekly-reports"
@@ -45,14 +45,40 @@ Use this exact architecture:
 ## 10. Known, unknown, inferred, and what would change the view
 ## Source notes and limitations
 
-Requirements: this must take 5-10 minutes to read. Target 1,200-1,800 words and NEVER exceed 2,000
-words. Prioritize only decision-relevant changes; compress source narration, combine overlapping
-signals, and omit low-impact headlines. Use compact Markdown tables for exact figures; date every
-observation; include a one-sentence takeaway after major sections; make every scenario include
-confirmation and invalidation conditions; do not personalize a trade or give investment instructions;
-close with an educational, non-advisory disclaimer. If the supplied evidence does not establish an
-item such as an economic-calendar event or market-implied probability, say so briefly and identify the
-missing evidence rather than filling the gap."""
+Requirements: aim for 3,000-5,000 words when the evidence supports it; use compact Markdown tables
+for exact figures; date every observation; include a one-sentence takeaway after major sections; make
+every scenario include confirmation and invalidation conditions; do not personalize a trade or give
+investment instructions; close with an educational, non-advisory disclaimer. If the supplied evidence
+does not establish an item such as an economic-calendar event or market-implied probability, say so
+and give the exact evidence needed rather than filling the gap."""
+
+USER_SUMMARY_PROMPT = """Create a concise English executive summary from the supplied weekly macro
+report. Use ONLY facts, figures, interpretations, qualifications, and thresholds already present in the
+report. Do not add facts or personalized trade advice. Target 350-500 words and stay below 3,800
+characters so the complete text fits in one Telegram message.
+
+Use exactly this editorial structure:
+### Weekly Macro Summary — [week dates]
+[One short paragraph naming the market regime, primary driver, and main cross-asset caveat.]
+
+**Key moves:**
+* [Asset]: **[weekly move]**
+[Include only the 6-9 most decision-relevant moves.]
+
+### 🟢 What is bullish
+[Two compact paragraphs with exact supporting figures and the implied transmission mechanism.]
+
+### 🟠 What warrants caution
+[One or two compact paragraphs explaining the most important divergence or missing confirmation.]
+
+### Next week
+[State the base case in bold, then one compact bullish-confirmation paragraph and one compact bearish-
+invalidation paragraph using exact thresholds when the source report provides them.]
+
+**In one sentence:** [A direct regime conclusion with the main driver and the main caveat.]
+
+Omit detailed chronology, exhaustive source notes, minor headlines, repeated caveats, disclaimers, and
+generic commentary. If the source lacks an exact threshold, do not invent one."""
 
 
 def _trading_coach_destination() -> Path | None:
@@ -117,7 +143,58 @@ def _evidence() -> tuple[str, list[str]]:
     return json.dumps(payload, ensure_ascii=False, default=str), market_warnings + news_warnings
 
 
-def generate_report() -> tuple[str, list[str]]:
+def _summarize_for_user(client, model: str, report: str) -> str:
+    response = client.responses.create(
+        model=model,
+        input=[
+            {"role": "system", "content": USER_SUMMARY_PROMPT},
+            {"role": "user", "content": report},
+        ],
+        max_output_tokens=2500,
+        text={"verbosity": "low"},
+    )
+    summary = response.output_text.strip()
+    if not summary:
+        raise RuntimeError("OpenAI returned an empty weekly user summary.")
+    if len(summary) > 3800 or len(summary.split()) > 650:
+        compression = client.responses.create(
+            model=model,
+            input=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Compress this English weekly macro summary to 300-450 words and at most 3,500 "
+                        "characters. Preserve the heading, key moves, bullish evidence, caution, next-week "
+                        "confirmation/invalidation thresholds, and one-sentence conclusion. Remove only "
+                        "secondary detail and repetition. Do not add facts. Return only the summary."
+                    ),
+                },
+                {"role": "user", "content": summary},
+            ],
+            max_output_tokens=2200,
+            text={"verbosity": "low"},
+        )
+        summary = compression.output_text.strip()
+    if not summary or len(summary) > 3800 or len(summary.split()) > 650:
+        raise RuntimeError(
+            f"Weekly user summary exceeded its delivery limit ({len(summary)} characters, "
+            f"{len(summary.split())} words)."
+        )
+    return summary
+
+
+def generate_user_summary(report: str) -> str:
+    if not os.getenv("OPENAI_API_KEY"):
+        raise RuntimeError("OPENAI_API_KEY is required for the weekly user summary.")
+    from openai import OpenAI
+
+    configure_tls()
+    client = OpenAI()
+    model = os.getenv("OPENAI_WEEKLY_MODEL", os.getenv("OPENAI_MODEL", "gpt-5.6"))
+    return _summarize_for_user(client, model, report)
+
+
+def generate_report() -> tuple[str, str, list[str]]:
     if not os.getenv("OPENAI_API_KEY"):
         raise RuntimeError("OPENAI_API_KEY is required for the deep weekly report.")
     evidence, warnings = _evidence()
@@ -132,60 +209,50 @@ def generate_report() -> tuple[str, list[str]]:
             {"role": "system", "content": WEEKLY_SYSTEM_PROMPT},
             {"role": "user", "content": "Create this Sunday's report from the evidence JSON:\n" + evidence},
         ],
-        max_output_tokens=6000,
+        max_output_tokens=16000,
         text={"verbosity": "high"},
     )
     report = response.output_text.strip()
     if not report:
         raise RuntimeError("OpenAI returned an empty weekly report.")
-    word_count = len(report.split())
-    if word_count > 2000:
-        compression = client.responses.create(
-            model=model,
-            input=[
-                {
-                    "role": "system",
-                    "content": (
-                        "Edit the supplied weekly macro report to 1,200-1,800 words and never more "
-                        "than 2,000 words. Preserve its factual qualifications, key figures, scenario "
-                        "confirmations and invalidations, source limitations, headings, and disclaimer. "
-                        "Remove repetition and low-impact detail. Do not add facts. Return only the report."
-                    ),
-                },
-                {"role": "user", "content": report},
-            ],
-            max_output_tokens=6000,
-            text={"verbosity": "medium"},
-        )
-        report = compression.output_text.strip()
-        word_count = len(report.split())
-        if not report or word_count > 2000:
-            raise RuntimeError(f"Weekly report could not meet the 2,000-word reading limit ({word_count} words).")
-    return report, warnings
+    summary = _summarize_for_user(client, model, report)
+    return report, summary, warnings
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-send", action="store_true", help="Generate locally without Telegram delivery.")
+    parser.add_argument("--summary-from", type=Path, help="Create the user summary from an existing full report.")
     args = parser.parse_args()
     load_dotenv(Path(__file__).resolve().parent / ".env")
-    report, warnings = generate_report()
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    output = REPORTS_DIR / f"{datetime.now():%Y-%m-%d}-weekly-macro-report.md"
-    output.write_text(report + "\n", encoding="utf-8")
-    trading_coach_copies = _copy_to_trading_coach(output)
+    if args.summary_from:
+        report = args.summary_from.resolve().read_text(encoding="utf-8")
+        summary = generate_user_summary(report)
+        warnings: list[str] = []
+        output = args.summary_from.resolve()
+        trading_coach_copies: list[Path] = []
+    else:
+        report, summary, warnings = generate_report()
+        output = REPORTS_DIR / f"{datetime.now():%Y-%m-%d}-weekly-macro-report.md"
+        output.write_text(report + "\n", encoding="utf-8")
+        trading_coach_copies = _copy_to_trading_coach(output)
+    summary_output = REPORTS_DIR / f"{datetime.now():%Y-%m-%d}-weekly-summary.md"
+    summary_output.write_text(summary + "\n", encoding="utf-8")
     for warning in warnings:
         print(f"WARNING: {warning}")
-    if not trading_coach_copies:
-        print("WARNING: Trading Coach Agent workspace was not found; report handoff skipped.")
-    else:
-        for copied_path in trading_coach_copies:
-            print(f"TRADING COACH COPY: {copied_path}")
+    if not args.summary_from:
+        if not trading_coach_copies:
+            print("WARNING: Trading Coach Agent workspace was not found; report handoff skipped.")
+        else:
+            for copied_path in trading_coach_copies:
+                print(f"TRADING COACH COPY: {copied_path}")
     if args.no_send or not telegram_configured():
-        print(f"WEEKLY REPORT SAVED: {output}. Telegram delivery skipped.")
+        print(f"WEEKLY REPORT SAVED: {output}")
+        print(f"USER SUMMARY SAVED: {summary_output}. Telegram delivery skipped.")
         return 0
-    send_document(output, f"Investor OS weekly macro report - {datetime.now():%d %b %Y}")
-    print(f"WEEKLY REPORT SENT: {output}")
+    send(summary)
+    print(f"USER SUMMARY SENT: {summary_output}")
     return 0
 
 

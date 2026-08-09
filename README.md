@@ -50,10 +50,11 @@ Portfolio records, account balances, transactions, generated briefs, and credent
 
 ## Sunday deep macro report
 
-`weekly_report.py` creates a 5-10 minute English report (target 1,200-1,800 words; hard maximum 2,000) from the latest five trading sessions, dated FRED observations, and seven days of publisher-attributed headline claims. Its structure follows the research discipline of the workspace's `AI-Advisor-Build-Guide.pdf`: baseline, ranked changes, exact dashboard, transmission mechanisms, disagreements, catalysts, scenarios, and a known/unknown/invalidation close. It never copies the source report or treats headlines as verified facts.
+`weekly_report.py` creates two English outputs from the latest five trading sessions, dated FRED observations, and seven days of publisher-attributed headline claims. The full Trading Coach report follows the research discipline of the workspace's `AI-Advisor-Build-Guide.pdf`: baseline, ranked changes, exact dashboard, transmission mechanisms, disagreements, catalysts, scenarios, and a known/unknown/invalidation close. The user's Telegram summary is a compact 350-500 word regime briefing with key moves, bullish evidence, caution signals, and next-week confirmation/invalidation levels. Neither output copies the source report or treats headlines as verified facts.
 
-The report is saved under `data/weekly-reports/`, copied to the sibling Trading Coach Agent workspace as `Weekly_Macro_Report.md`, and delivered to Telegram as a Markdown document. The dated Investor OS portfolio record is copied alongside it as `Investor_OS_Portfolio_Snapshot.md` so Aura can reconcile recorded holdings against the macro backdrop. Set `TRADING_COACH_WORKSPACE` only when that workspace is stored somewhere else. The report requires `OPENAI_API_KEY`; optionally set `OPENAI_WEEKLY_MODEL`, otherwise it uses `OPENAI_MODEL` and then `gpt-5.6`.
+Both outputs are saved under `data/weekly-reports/`. The full report is copied to the sibling Trading Coach Agent workspace as `Weekly_Macro_Report.md`; the dated Investor OS portfolio record is copied alongside it as `Investor_OS_Portfolio_Snapshot.md`. Only the concise summary is sent to the user's Telegram. Set `TRADING_COACH_WORKSPACE` only when that workspace is stored somewhere else. The workflow requires `OPENAI_API_KEY`; optionally set `OPENAI_WEEKLY_MODEL`, otherwise it uses `OPENAI_MODEL` and then `gpt-5.6`.
 
 1. Test without Telegram delivery: `./.venv/Scripts/python.exe weekly_report.py --no-send`.
-2. Install the Sunday 19:00 schedule: `./Install-WeeklyReport.ps1`.
-3. Choose another time with `./Install-WeeklyReport.ps1 -Time "18:00"`.
+2. Create only a concise summary from an existing report: `./.venv/Scripts/python.exe weekly_report.py --summary-from data/weekly-reports/YYYY-MM-DD-weekly-macro-report.md --no-send`.
+3. Install the Sunday 19:00 schedule: `./Install-WeeklyReport.ps1`.
+4. Choose another time with `./Install-WeeklyReport.ps1 -Time "18:00"`.
