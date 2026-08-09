@@ -95,16 +95,17 @@ def _legacy_fallback_brief(snapshot: pd.DataFrame, headlines: list[dict[str, str
     ])
 
 
-AI_SYSTEM_PROMPT = """You are the evidence-led analyst for Investor OS. Produce a concise Telegram
+AI_SYSTEM_PROMPT = """You are the evidence-led analyst for Investor OS. Produce a very short Telegram
 market brief using ONLY the supplied evidence. Never invent a fact, price, catalyst, consensus,
 probability, support level, or causal claim. Separate OBSERVED FACTS from ANALYSIS/IMPLICATIONS.
 Explain the transmission mechanism: what changed -> why markets care -> which assets are helped or
 hurt -> what would confirm or invalidate the read. Treat news headlines as claims, not verified facts;
 name their publisher and time. Mention disagreement across assets. Do not turn a tactical idea into a
 core investment. Never recommend leverage without entry, hard stop, invalidation and >=2:1 reward/risk.
-If evidence is insufficient, say NO TRADE / INSUFFICIENT DATA. Keep the entire answer under 3,700
-characters. Use these exact compact sections: MARKET VERDICT; OBSERVED DATA; REAL NEWS & WHY IT
-MATTERS; CROSS-ASSET IMPLICATIONS; DECISION FRAME; NEXT CONFIRMATION. Do not use markdown tables."""
+If evidence is insufficient, say NO TRADE / INSUFFICIENT DATA. Keep the entire answer under 2,000
+characters and include no more than three material headlines. Use these exact compact sections:
+MARKET VERDICT; OBSERVED DATA; WHAT CHANGED; DECISION FRAME; NEXT CONFIRMATION. Use bullets,
+one sentence per bullet, and no markdown tables, preamble, recap, or generic market commentary."""
 
 
 def _evidence(snapshot: pd.DataFrame, macro: dict, headlines: list[dict[str, str]]) -> str:
@@ -130,7 +131,7 @@ def _ai_brief(snapshot: pd.DataFrame, macro: dict, headlines: list[dict[str, str
     text = response.output_text.strip()
     if not text:
         raise RuntimeError("OpenAI returned an empty daily brief.")
-    return text[:3900]
+    return text[:2000]
 
 
 def _grounded_fallback(snapshot: pd.DataFrame, macro: dict, headlines: list[dict[str, str]]) -> str:
@@ -187,6 +188,7 @@ def main() -> int:
     except Exception as error:
         print(f"AI BRIEF FAILED: {error}. Sending evidence-led fallback.")
         brief = _grounded_fallback(snapshot, macro, headlines)
+    brief = brief[:2000]
     BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
     output = BRIEFS_DIR / f"{datetime.now():%Y-%m-%d}.md"
     output.write_text(brief + "\n", encoding="utf-8")

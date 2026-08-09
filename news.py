@@ -29,18 +29,21 @@ BLOCKED_PHRASES = {
 }
 
 
-def _rss_url(query: str) -> str:
-    encoded = requests.utils.quote(f"{query} when:1d")
+def _rss_url(query: str, lookback_days: int = 1) -> str:
+    days = max(1, min(int(lookback_days), 30))
+    encoded = requests.utils.quote(f"{query} when:{days}d")
     return f"https://news.google.com/rss/search?q={encoded}&hl=en-US&gl=US&ceid=US:en"
 
 
-def market_news(limit_per_topic: int = 2) -> tuple[list[dict[str, str]], list[str]]:
+def market_news(limit_per_topic: int = 2, lookback_days: int = 1) -> tuple[list[dict[str, str]], list[str]]:
     configure_tls()
     headlines: list[dict[str, str]] = []
     warnings: list[str] = []
     for topic, query in NEWS_QUERIES.items():
         try:
-            response = requests.get(_rss_url(query), headers={"User-Agent": "InvestorOS/1.0"}, timeout=20)
+            response = requests.get(
+                _rss_url(query, lookback_days), headers={"User-Agent": "InvestorOS/1.0"}, timeout=20
+            )
             response.raise_for_status()
             root = ET.fromstring(response.content)
             items = root.findall("./channel/item")[:limit_per_topic]

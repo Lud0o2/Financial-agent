@@ -26,6 +26,7 @@ WATCHLIST = {
     "Bitcoin": "BTC-USD",
 }
 SNAPSHOT_COLUMNS = ["Asset", "Ticker", "Last", "1D", "1M", "AsOf"]
+WEEKLY_SNAPSHOT_COLUMNS = ["Asset", "Ticker", "WeekStart", "Last", "1W", "1M", "AsOf"]
 
 
 @dataclass(frozen=True)
@@ -60,6 +61,40 @@ def market_snapshot() -> tuple[pd.DataFrame, list[str]]:
         except Exception as error:
             warnings.append(f"{ticker}: {error}")
     return pd.DataFrame(rows, columns=SNAPSHOT_COLUMNS), warnings
+
+
+def weekly_market_snapshot() -> tuple[pd.DataFrame, list[str]]:
+    """Return exact one-week and one-month moves for the Sunday report."""
+    configure_tls()
+    rows: list[dict[str, object]] = []
+    warnings: list[str] = []
+    for label, ticker in WATCHLIST.items():
+        try:
+            encoded = requests.utils.quote(ticker, safe="")
+            response = requests.get(
+                f"https://query1.finance.yahoo.com/v8/finance/chart/{encoded}",
+                params={"range": "3mo", "interval": "1d", "events": "div,splits"},
+                headers={"User-Agent": "Mozilla/5.0 InvestorOS/1.0"}, timeout=20,
+            )
+            response.raise_for_status()
+            result = response.json()["chart"]["result"][0]
+            closes = [value for value in result["indicators"]["quote"][0]["close"] if value is not None]
+            if len(closes) < 22:
+                warnings.append(f"{ticker}: insufficient history.")
+                continue
+            last = float(closes[-1])
+            rows.append({
+                "Asset": label,
+                "Ticker": ticker,
+                "WeekStart": float(closes[-6]),
+                "Last": last,
+                "1W": float(last / closes[-6] - 1),
+                "1M": float(last / closes[-22] - 1),
+                "AsOf": pd.to_datetime(result["timestamp"][-1], unit="s", utc=True).isoformat(),
+            })
+        except Exception as error:
+            warnings.append(f"{ticker}: {error}")
+    return pd.DataFrame(rows, columns=WEEKLY_SNAPSHOT_COLUMNS), warnings
 
 
 def classify_regime(snapshot: pd.DataFrame) -> Regime:

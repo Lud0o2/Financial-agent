@@ -3,5 +3,6 @@
 .tools/
 data/*.db
 data/briefs/
+data/weekly-reports/
 data/charts/
 __pycache__/

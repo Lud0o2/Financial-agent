@@ -13,4 +13,10 @@ After completing any user-requested modification in this repository:
 
 Never push `.env`, credentials, API keys, Telegram tokens, broker exports, holdings, balances, transactions, Investor OS financial records, generated briefs, local databases, charts, virtual environments, or local tooling. If any of these appear in the staged diff, stop the publish step, remove them from the Git index without deleting the local files, and report the issue.
 
+## Report contract
+
+- Weekday market news stays short and Telegram-friendly: no more than 2,000 characters and three material headlines.
+- Every Sunday, generate one deep English macro report following the evidence discipline and analytical architecture defined in the parent workspace `AGENTS.md` and modeled on `AI-Advisor-Build-Guide.pdf`.
+- Weekly reports must use dated source evidence, distinguish facts from inference and headline claims, state missing evidence, and include confirmation/invalidation conditions. Never invent data to complete a section.
+
 If authentication, validation, merge conflicts, remote policy, or network access blocks the push, do not bypass the safeguard. Preserve the local commit when safe and tell the user exactly what remains.

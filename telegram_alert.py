@@ -39,3 +39,18 @@ def send_photo(path: Path, caption: str) -> None:
             timeout=30,
         )
     response.raise_for_status()
+
+
+def send_document(path: Path, caption: str) -> None:
+    """Deliver a long-form report as a Telegram document."""
+    if not configured():
+        raise RuntimeError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set before delivery.")
+    configure_tls()
+    with path.open("rb") as document:
+        response = requests.post(
+            f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendDocument",
+            data={"chat_id": os.environ["TELEGRAM_CHAT_ID"], "caption": caption},
+            files={"document": (path.name, document, "text/markdown")},
+            timeout=60,
+        )
+    response.raise_for_status()
