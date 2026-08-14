@@ -11,7 +11,14 @@ After completing any user-requested modification in this repository:
 5. Push the commit to the configured GitHub remote. When repository policy requires a branch or pull request, push that branch and open or update the pull request.
 6. Report the branch, commit, validation result, and GitHub destination to the user.
 
-Never push `.env`, credentials, API keys, Telegram tokens, broker exports, holdings, balances, transactions, Investor OS financial records, generated briefs, local databases, charts, virtual environments, or local tooling. If any of these appear in the staged diff, stop the publish step, remove them from the Git index without deleting the local files, and report the issue.
+Never push `.env`, credentials, API keys, Telegram tokens or identifiers, broker exports, holdings, balances, transactions, Investor OS financial records, full Trading Coach reports, local databases, charts, virtual environments, or local tooling. The only generated-report exception is `MARKET_SUMMARY_HISTORY.md`, which may contain the concise, sanitized user-facing daily and Sunday market summaries. If prohibited content appears in the staged diff, stop the publish step, remove it from the Git index without deleting the local files, and report the issue.
+
+## Market-summary archive
+
+- `MARKET_SUMMARY_HISTORY.md` is append-only. Add each final user-facing market summary exactly once under an ISO-dated heading; do not rewrite prior entries during routine runs.
+- Before every archive commit, verify UTF-8, prevent duplicate dates, and confirm the staged diff contains only the public summary and no private financial or authentication data.
+- For automated archive runs, stage only `MARKET_SUMMARY_HISTORY.md`, commit as `Archive market summary YYYY-MM-DD`, and push the current branch to its configured upstream. Never force-push. Preserve a safe local entry or commit and report the failure if publishing is blocked.
+- The parent workspace `AGENTS.md` is authoritative for the current report cadence, content, and length.
 
 ## Report contract
 
