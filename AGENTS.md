@@ -17,7 +17,8 @@ Never push `.env`, credentials, API keys, Telegram tokens or identifiers, broker
 
 - `MARKET_SUMMARY_HISTORY.md` is append-only. Add each final user-facing market summary exactly once under an ISO-dated heading; do not rewrite prior entries during routine runs.
 - Before every archive commit, verify UTF-8, prevent duplicate dates, and confirm the staged diff contains only the public summary and no private financial or authentication data.
-- For automated archive runs, stage only `MARKET_SUMMARY_HISTORY.md`, commit as `Archive market summary YYYY-MM-DD`, and push the current branch to its configured upstream. Never force-push. Preserve a safe local entry or commit and report the failure if publishing is blocked.
+- Automated archive runs publish directly on `main`. Before appending, require a clean tracked worktree, fetch `origin`, switch to `main`, and fast-forward only from `origin/main`. If this cannot be done safely, do not reset, overwrite, or force the repository; preserve the prepared summary outside Git and report the blocker.
+- On synchronized `main`, stage only `MARKET_SUMMARY_HISTORY.md`, commit as `Archive market summary YYYY-MM-DD`, push `main` to `origin`, and verify local `main` equals `origin/main`. Never force-push. Preserve a safe local entry or commit and report the failure if publishing is blocked.
 - The parent workspace `AGENTS.md` is authoritative for the current report cadence, content, and length.
 
 ## Report contract
