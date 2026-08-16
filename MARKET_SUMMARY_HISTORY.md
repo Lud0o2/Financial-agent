@@ -59,3 +59,33 @@ WHAT WOULD CHANGE THE READ
 Tuesday's import-price release and Home Depot results test whether oil and housing costs are still passing through. Target and Lowe's report Wednesday, followed by FOMC minutes; Walmart reports Thursday. Falling long yields plus improving breadth would validate policy relief. Firm oil and yields alongside weak retailer guidance would strengthen the margin-and-demand squeeze interpretation.
 
 Sources: AP final market reports, 14-15 Aug 2026; US BLS release calendar; Federal Reserve calendar; Home Depot investor relations.
+
+## 2026-08-16 — Weekly market map
+
+Weekly Market Map — 10-14 August 2026
+
+What the market learned
+
+Inflation improved, but not enough to settle the growth-versus-inflation debate. July CPI rose 0.1% month on month and 3.4% year on year; core CPI was 0.2% and 2.5%. Headline PPI was unchanged and slowed to 4.7% year on year, but the measure excluding food, energy and trade services still rose 0.4% on the month and 4.7% annually. Friday then added a different problem: retail sales fell 0.6%, including a 0.4% decline in the GDP-linked control group.
+
+How the reaction travelled
+
+Rates: softer inflation initially lowered yields and supported duration-sensitive technology. FRED shows the 2-year yield moving from 4.19% on 7 August to 4.15% on 13 August. Yet the 10-year rose from 4.63% Thursday to 4.69% Friday as Brent gained 1.7% to $88.52. Near-term Fed pressure eased, but the long end still priced inflation and term uncertainty.
+
+Equities: the S&P 500 gained only 0.4% for the week and the Nasdaq 0.1%, despite strong midweek reactions to CPI and PPI. The Russell 2000 gained 1.1%, while the Dow lost 0.6%. Small caps therefore broadened participation, but the major indexes did not confirm a synchronized growth upgrade.
+
+Credit and volatility: US high-yield spreads moved only from 2.70% to 2.71% through Thursday, while VIX fell from 14.90 to 14.63. Weak growth data caused repricing, not a broad funding alarm. The 10-year inflation breakeven nevertheless rose from 2.25% to 2.27%, contradicting a complete disinflation story.
+
+Earnings and flows: Applied Materials fell 5.1% despite beating profit and revenue expectations because its stock had already more than doubled this year. Reddit rose 12.6% after S&P 500 inclusion was announced. One move reflected an expectations hurdle; the other reflected anticipated passive demand.
+
+The important disagreement
+
+Normally, weak retail sales plus softer inflation should pull yields down and lift equities. Instead, oil and the 10-year rose while large-cap indexes fell Friday. The market is distinguishing policy relief caused by disinflation from policy relief caused by weaker demand: the first helps valuations, while the second threatens future cash flows.
+
+Concept to keep
+
+Markets trade the expectations gap. When favorable news produces only a small gain, the muted reaction is evidence that relief was already priced or offset elsewhere. Price response is part of the data.
+
+Next week's tests
+
+Tuesday brings import prices, industrial production and Home Depot; Target and Lowe's report Wednesday before the July FOMC minutes; Walmart reports Thursday. Falling long yields with stable credit and sustained breadth would support constructive policy relief. Firm oil, rising breakevens and weak retailer guidance would strengthen the margin-and-demand squeeze interpretation.
