@@ -89,3 +89,32 @@ Markets trade the expectations gap. When favorable news produces only a small ga
 Next week's tests
 
 Tuesday brings import prices, industrial production and Home Depot; Target and Lowe's report Wednesday before the July FOMC minutes; Walmart reports Thursday. Falling long yields with stable credit and sustained breadth would support constructive policy relief. Firm oil, rising breakevens and weak retailer guidance would strengthen the margin-and-demand squeeze interpretation.
+
+## 2026-08-17 — Daily market lesson
+
+TODAY'S MARKET QUESTION
+Why are stocks holding near records even as stronger activity data, oil and long yields move in the less-friendly direction?
+
+Data cutoff: about 12:00 ET; Monday's US session is still open.
+
+REACTION MAP
+• Growth → rates: a stronger-than-expected New York manufacturing reading pushed the 10-year Treasury yield to 4.70% from 4.68% Friday. Better activity supports nominal growth, but reduces the urgency for policy relief and raises the discount rate on future profits.
+
+• Rates → equities: higher long yields normally hurt expensive, long-duration technology. Instead, around midday the S&P 500 was down only 0.1%, the Dow 0.4%, while the Nasdaq was up 0.2%. Technology's resilience suggests earnings are offsetting today's small rate shock; rates still matter.
+
+• Oil → inflation and margins: Brent added 0.4% to $88.87, modest relative to July's $72-$102 range. Markets did not treat it as a fresh supply shock, but oil still lifts fuel and freight costs, squeezing discretionary income and retailer margins.
+
+• Earnings → index support: S&P 500 spring-quarter earnings per share are tracking roughly 50% above a year earlier, according to FactSet data cited by AP. That buffer helps explain why a 4.70% 10-year yield has not forced a broad selloff. Strong index profits, however, do not prove that households or retailers are equally healthy.
+
+• Consumer → the next test: after July retail sales fell 0.6%, Home Depot reports Tuesday, Target and Lowe's Wednesday, and Walmart Thursday. Guidance, transaction counts and margins can reveal whether shoppers are trading down and firms can pass costs through.
+
+WHAT THE DIVERGENCES SAY
+Growth data, oil and yields leaned inflationary, yet the Nasdaq rose and the broad market barely moved. That is absorption, not proof the risk disappeared. Investors appear to be waiting for company-level cash-flow evidence before turning consumer weakness into a broad earnings downgrade. A quiet index can hide an unresolved contest between strong profits and weaker household demand.
+
+LEARN ONE THING
+An earnings buffer is the profit growth that can absorb a higher discount rate before valuations must fall. It is strongest when revisions are broad and forward-looking; weaker when growth is concentrated or owes to an easy comparison. Ask who is producing the growth.
+
+WHAT WOULD CHANGE THE READ
+Stable retailer guidance with a steady or lower 10-year yield would extend the earnings buffer beyond large-cap leaders. Rising oil and yields plus weaker traffic, margins or guidance would show the flat index was delay, not resolution. Tuesday's import prices, housing starts and industrial production provide the next cross-check; Wednesday's FOMC minutes test policymakers' tolerance for this mix.
+
+Sources: AP intraday market report, 17 Aug 2026; Federal Reserve and New York Fed release calendars, accessed 17 Aug 2026.
